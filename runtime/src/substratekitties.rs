@@ -1,10 +1,20 @@
 use support::{decl_storage, decl_module, StorageValue, dispatch::Result, StorageMap};
 use system::ensure_signed;
-//use system::ensure_inherent;
+use runtime_primitives::traits::{As, Hash};
+use parity_codec::{Encode, Decode};
 
 //pub trait Trait: system::Trait {}
-pub trait Trait: balances::Trait {}
+#[derive(Encode, Decode, Default, Clone, PartialEq)]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct Trace<Hash>
+{
+    id: Hash,
+    from: Hash,
+    to: Hash,
+    message: u64,
+}
 
+pub trait Trait: balances::Trait {}
 
 decl_storage! {
     //?
@@ -15,6 +25,7 @@ decl_storage! {
         Value: u64;
         SomeValue get(some_value_getter): map T::AccountId => u64;
         MyValue: map T::AccountId => u64;
+        Mytrace get(owner): map T::AccountId => Trace<T::Hash>;
     }
 }
 
@@ -46,6 +57,22 @@ decl_module! {
             //let ret = Self::some_value_getter(sender);
             //return value?
             Ok(())
+        }
+
+        fn create_trace(origin) -> Result {
+            let sender = ensure_signed(origin)?;
+
+            let new_trace = Trace {
+                id: <T as system::Trait>::Hashing::hash_of(&0),
+                from: <T as system::Trait>::Hashing::hash_of(&0),
+                to: <T as system::Trait>::Hashing::hash_of(&0),
+                message: 0,
+            };
+
+            <Mytrace<T>>::insert(&sender, new_trace);
+
+            Ok(())
+
         }
     }
 }
