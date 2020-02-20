@@ -1,7 +1,10 @@
-use support::{decl_storage, decl_module, StorageValue, dispatch::Result};
+use support::{decl_storage, decl_module, StorageValue, dispatch::Result, StorageMap};
 use system::ensure_signed;
+//use system::ensure_inherent;
 
-pub trait Trait: system::Trait {}
+//pub trait Trait: system::Trait {}
+pub trait Trait: balances::Trait {}
+
 
 decl_storage! {
     //?
@@ -10,6 +13,8 @@ decl_storage! {
         MyU32: u32;
         Mybool get(my_bool_getter): bool;
         Value: u64;
+        SomeValue get(some_value_getter): map T::AccountId => u64;
+        MyValue: map T::AccountId => u64;
     }
 }
 
@@ -24,6 +29,22 @@ decl_module! {
             //?
             <Value<T>>::put(value);
 
+            Ok(())
+        }
+
+        fn set_value_2(origin, value:u64) -> Result{
+            let sender = ensure_signed(origin)?;
+
+            <MyValue<T>>::insert(sender, value);
+
+            Ok(())
+        }
+
+        fn get_value(origin) -> Result{
+            let sender = ensure_signed(origin)?;
+            let ret = <SomeValue<T>>::get(sender);
+            //let ret = Self::some_value_getter(sender);
+            //return value?
             Ok(())
         }
     }
